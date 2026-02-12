@@ -44,6 +44,16 @@ cp config.ini.example config.ini
 python Akile-Checkin.py
 ```
 
+### GitHub Actions（推荐免服务器）
+
+1. Fork 本仓库到你的 GitHub 账号。
+2. 在仓库 `Settings -> Secrets and variables -> Actions` 中添加以下 Secrets：
+   - `AKILE_EMAIL`：Akile 登录邮箱
+   - `AKILE_PASSWORD`：Akile 登录密码
+   - `AKILE_PUSH_KEY`：Server酱 SendKey（可选）
+3. 默认已配置定时任务：**每天北京时间 09:00 自动运行**（UTC 01:00）。
+4. 你也可以在 Actions 页面手动触发 `Akile Daily Check-in` 工作流。
+
 ## ⚙️ 配置说明
 
 编辑 `config.ini` 文件：

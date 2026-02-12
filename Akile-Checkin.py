@@ -1,5 +1,6 @@
 import time
 import sys
+import os
 import configparser
 import undetected_chromedriver as uc
 from selenium import webdriver
@@ -12,12 +13,18 @@ from notice import Notice
 
 class AkileCheckin:
     def __init__(self):
-        # 读取配置文件
-        config = configparser.ConfigParser()
-        config.read('config.ini', encoding='utf-8')
-        self.email = config.get('akile', 'email')
-        self.password = config.get('akile', 'password')
-        self.push_key = config.get('akile', 'push_key')
+        # 优先读取环境变量（便于在 GitHub Actions 中直接运行）
+        self.email = os.getenv('AKILE_EMAIL', '').strip()
+        self.password = os.getenv('AKILE_PASSWORD', '').strip()
+        self.push_key = os.getenv('AKILE_PUSH_KEY', '').strip()
+
+        # 若环境变量未配置则回退到配置文件
+        if not self.email or not self.password:
+            config = configparser.ConfigParser()
+            config.read('config.ini', encoding='utf-8')
+            self.email = self.email or config.get('akile', 'email')
+            self.password = self.password or config.get('akile', 'password')
+            self.push_key = self.push_key or config.get('akile', 'push_key', fallback='')
         # Selenium防检测
         options = uc.ChromeOptions()
         # Selenium无头模式
@@ -28,7 +35,7 @@ class AkileCheckin:
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
-        self.browser = uc.Chrome(options=options, version_main=144)
+        self.browser = uc.Chrome(options=options)
 
     def login(self):
         self.browser.get("https://akile.io/")
