@@ -1,5 +1,8 @@
 import time
 import sys
+import os
+import re
+import subprocess
 import configparser
 import undetected_chromedriver as uc
 from selenium import webdriver
@@ -12,12 +15,20 @@ from notice import Notice
 
 class AkileCheckin:
     def __init__(self):
-        # 读取配置文件
-        config = configparser.ConfigParser()
-        config.read('config.ini', encoding='utf-8')
-        self.email = config.get('akile', 'email')
-        self.password = config.get('akile', 'password')
-        self.push_key = config.get('akile', 'push_key')
+        self.browser = None
+        # 优先读取环境变量（便于在 GitHub Actions 中直接运行）
+        self.email = os.getenv('AKILE_EMAIL', '').strip()
+        self.password = os.getenv('AKILE_PASSWORD', '').strip()
+        self.push_key = os.getenv('AKILE_PUSH_KEY', '').strip()
+
+        # 若环境变量未配置则回退到配置文件
+        if not self.email or not self.password:
+            config = configparser.ConfigParser()
+            config.read('config.ini', encoding='utf-8')
+            self.email = self.email or config.get('akile', 'email')
+            self.password = self.password or config.get('akile', 'password')
+            self.push_key = self.push_key or config.get('akile', 'push_key', fallback='')
+
         # Selenium防检测
         options = uc.ChromeOptions()
         # Selenium无头模式
@@ -28,7 +39,33 @@ class AkileCheckin:
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
-        self.browser = uc.Chrome(options=options, version_main=144)
+
+        # 在 CI 中显式指定 Chrome 主版本，避免 ChromeDriver 版本不匹配
+        chrome_major = self._get_chrome_major_version()
+        if chrome_major:
+            self.browser = uc.Chrome(options=options, version_main=chrome_major)
+        else:
+            self.browser = uc.Chrome(options=options)
+
+    @staticmethod
+    def _get_chrome_major_version():
+        candidates = [
+            ["google-chrome", "--version"],
+            ["google-chrome-stable", "--version"],
+            ["chromium-browser", "--version"],
+            ["chromium", "--version"],
+        ]
+
+        for cmd in candidates:
+            try:
+                output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True).strip()
+                match = re.search(r"(\d+)\.", output)
+                if match:
+                    return int(match.group(1))
+            except Exception:
+                continue
+
+        return None
 
     def login(self):
         self.browser.get("https://akile.io/")
@@ -126,7 +163,8 @@ class AkileCheckin:
                 sys.exit(1)
 
     def __del__(self):
-        self.browser.quit()
+        if self.browser:
+            self.browser.quit()
 
 if __name__ == "__main__":
     akile = AkileCheckin()
