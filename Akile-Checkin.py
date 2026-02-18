@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import configparser
+import shutil
 import undetected_chromedriver as uc
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -41,32 +42,37 @@ class AkileCheckin:
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
         )
 
-        # 在 CI 中显式指定 Chrome 主版本，避免 ChromeDriver 版本不匹配
-        chrome_major = self._get_chrome_major_version()
+        # 在 CI 中显式指定 Chrome 二进制与主版本，避免多版本并存导致的版本错配
+        chrome_path, chrome_major = self._get_chrome_info()
+        if chrome_path:
+            options.binary_location = chrome_path
+            print(f"Using Chrome binary: {chrome_path} (major={chrome_major})")
+
         if chrome_major:
             self.browser = uc.Chrome(options=options, version_main=chrome_major)
         else:
             self.browser = uc.Chrome(options=options)
 
     @staticmethod
-    def _get_chrome_major_version():
-        candidates = [
-            ["google-chrome", "--version"],
-            ["google-chrome-stable", "--version"],
-            ["chromium-browser", "--version"],
-            ["chromium", "--version"],
-        ]
+    def _get_chrome_info():
+        candidates = ["google-chrome", "google-chrome-stable", "chromium-browser", "chromium"]
 
-        for cmd in candidates:
+        for binary in candidates:
+            binary_path = shutil.which(binary)
+            if not binary_path:
+                continue
+
             try:
-                output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True).strip()
+                output = subprocess.check_output(
+                    [binary_path, "--version"], stderr=subprocess.STDOUT, text=True
+                ).strip()
                 match = re.search(r"(\d+)\.", output)
                 if match:
-                    return int(match.group(1))
+                    return binary_path, int(match.group(1))
             except Exception:
                 continue
 
-        return None
+        return None, None
 
     def login(self):
         self.browser.get("https://akile.io/")
