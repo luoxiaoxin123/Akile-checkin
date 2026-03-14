@@ -6,7 +6,6 @@
 
 - 🤖 **全自动签到** - 自动登录并完成每日签到任务
 - 🐳 **Docker支持** - 开箱即用的容器化部署
-- 📬 **消息推送** - 支持 Server酱 推送签到结果
 
 ## 📦 快速开始
 
@@ -61,7 +60,6 @@ python Akile-Checkin.py
 [akile]
 email = your_email@example.com     # Akile 账号邮箱
 password = your_password            # Akile 账号密码
-push_key =                          # Server酱推送Key（可选）
 ```
 
 ## 🕐 定时任务
