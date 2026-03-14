@@ -50,7 +50,6 @@ python Akile-Checkin.py
 2. 在仓库 `Settings -> Secrets and variables -> Actions` 中添加以下 Secrets：
    - `AKILE_EMAIL`：Akile 登录邮箱
    - `AKILE_PASSWORD`：Akile 登录密码
-   - `AKILE_PUSH_KEY`：Server酱 SendKey（可选）
 3. 默认已配置定时任务：**每天北京时间 09:00 自动运行**（UTC 01:00）。
 4. 你也可以在 Actions 页面手动触发 `Akile Daily Check-in` 工作流。
 
@@ -64,11 +63,6 @@ email = your_email@example.com     # Akile 账号邮箱
 password = your_password            # Akile 账号密码
 push_key =                          # Server酱推送Key（可选）
 ```
-
-### Server酱推送配置（可选）
-
-1. 前往 [Server酱官网](https://sct.ftqq.com/) 注册并获取 SendKey
-2. 将 SendKey 填入 `config.ini` 的 `push_key` 字段
 
 ## 🕐 定时任务
 
