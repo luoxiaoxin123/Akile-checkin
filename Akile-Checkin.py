@@ -77,23 +77,30 @@ class AkileCheckin:
     def login(self):
         self.browser.get("https://akile.io/")
         self.browser.maximize_window()
+
+        # 等待弹窗加载并尝试关闭
+        time.sleep(2)
         try:
-            time.sleep(1)
-            self.browser.execute_script("""
-                var modals = document.querySelectorAll('.arco-modal-wrapper, .arco-modal-mask');
-                modals.forEach(function(m) { m.remove(); });
-                document.body.style.overflow = '';
-            """)
+            close_btn = self.browser.find_element(By.CSS_SELECTOR, '.arco-modal-close-btn, .arco-modal-close, [class*="close"]')
+            close_btn.click()
+            time.sleep(0.5)
         except Exception:
             pass
 
+        # 强制移除所有可能的遮挡层
+        self.browser.execute_script("""
+            document.querySelectorAll('.arco-modal-wrapper, .arco-modal-mask, .arco-modal').forEach(m => m.remove());
+            document.body.style.overflow = '';
+        """)
+
         try:
             login_button = WebDriverWait(self.browser, 10).until(
-                EC.element_to_be_clickable(
+                EC.presence_of_element_located(
                     (By.XPATH, '//*[@id="app"]/div[1]/div[1]/div/div/div[2]/div/div[2]/button')
                 )
             )
-            login_button.click()
+            # 使用 JS 点击，绕过 ElementClickInterceptedException
+            self.browser.execute_script("arguments[0].click();", login_button)
         except TimeoutException as e:
             print(f"登录按钮没有加载出来: {e}")
             msg = f"登录按钮没有加载出来: {e}\n签到失败"
