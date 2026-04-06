@@ -78,6 +78,16 @@ class AkileCheckin:
         self.browser.get("https://akile.io/")
         self.browser.maximize_window()
         try:
+            time.sleep(1)
+            self.browser.execute_script("""
+                var modals = document.querySelectorAll('.arco-modal-wrapper, .arco-modal-mask');
+                modals.forEach(function(m) { m.remove(); });
+                document.body.style.overflow = '';
+            """)
+        except Exception:
+            pass
+
+        try:
             login_button = WebDriverWait(self.browser, 10).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, '//*[@id="app"]/div[1]/div[1]/div/div/div[2]/div/div[2]/button')
