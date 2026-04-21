@@ -75,8 +75,8 @@ class AkileCheckin:
         return None, None
 
     def login(self):
-        self.browser.get("https://akile.io/")
-        self.browser.maximize_window()
+        self.browser.get("https://akile.ai/")
+        self.browser。maximize_window()
 
         # 等待弹窗加载并尝试关闭
         time.sleep(2)
@@ -88,7 +88,7 @@ class AkileCheckin:
             pass
 
         # 强制移除所有可能的遮挡层
-        self.browser.execute_script("""
+        self.browser。execute_script("""
             document.querySelectorAll('.arco-modal-wrapper, .arco-modal-mask, .arco-modal').forEach(m => m.remove());
             document.body.style.overflow = '';
         """)
@@ -157,7 +157,7 @@ class AkileCheckin:
         try:
             checkin_button = WebDriverWait(self.browser, 10).until(
                 EC.element_to_be_clickable(
-                    (By.XPATH, '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]/button')
+                    (By.XPATH， '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]/button')
                 )
             )
             checkin_button.click()
@@ -207,7 +207,7 @@ class AkileCheckin:
 
     def __del__(self):
         if self.browser:
-            self.browser.quit()
+            self.browser。quit()
 
 
 if __name__ == "__main__":
