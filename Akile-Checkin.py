@@ -88,7 +88,7 @@ class AkileCheckin:
             pass
 
         # 强制移除所有可能的遮挡层
-        self.browser。execute_script("""
+        self.browser.execute_script("""
             document.querySelectorAll('.arco-modal-wrapper, .arco-modal-mask, .arco-modal').forEach(m => m.remove());
             document.body.style.overflow = '';
         """)
