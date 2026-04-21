@@ -76,7 +76,7 @@ class AkileCheckin:
 
     def login(self):
         self.browser.get("https://akile.ai/")
-        self.browser。maximize_window()
+        self.browser.maximize_window()
 
         # 等待弹窗加载并尝试关闭
         time.sleep(2)
