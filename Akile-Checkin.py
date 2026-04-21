@@ -139,7 +139,7 @@ class AkileCheckin:
 
     # 签到主逻辑
     def check_in(self):
-        checkin_page = "https://akile.io/console/ak-coin-shop"
+        checkin_page = "https://akile.ai/console/ak-coin-shop"
         self.browser.get(checkin_page)
 
         # 签到前的积分（对于已签到过的用户这个积分就是签到后的积分）
