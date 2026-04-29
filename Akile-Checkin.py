@@ -1,16 +1,17 @@
-import time
-import sys
+import configparser
 import os
 import re
-import subprocess
-import configparser
 import shutil
+import subprocess
+import sys
+import time
+
 import undetected_chromedriver as uc
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from notice import Notice
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
-from notice import Notice
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class AkileCheckin:
@@ -28,7 +29,9 @@ class AkileCheckin:
             config.read("config.ini", encoding="utf-8")
             self.email = self.email or config.get("akile", "email")
             self.password = self.password or config.get("akile", "password")
-            self.push_key = self.push_key or config.get("akile", "push_key", fallback="")
+            self.push_key = self.push_key or config.get(
+                "akile", "push_key", fallback=""
+            )
 
         options = uc.ChromeOptions()
         options.add_argument("--lang=zh-CN")
@@ -55,7 +58,12 @@ class AkileCheckin:
 
     @staticmethod
     def _get_chrome_info():
-        candidates = ["google-chrome", "google-chrome-stable", "chromium-browser", "chromium"]
+        candidates = [
+            "google-chrome",
+            "google-chrome-stable",
+            "chromium-browser",
+            "chromium",
+        ]
 
         for binary in candidates:
             binary_path = shutil.which(binary)
@@ -81,7 +89,10 @@ class AkileCheckin:
         # 等待弹窗加载并尝试关闭
         time.sleep(2)
         try:
-            close_btn = self.browser.find_element(By.CSS_SELECTOR, '.arco-modal-close-btn, .arco-modal-close, [class*="close"]')
+            close_btn = self.browser.find_element(
+                By.CSS_SELECTOR,
+                '.arco-modal-close-btn, .arco-modal-close, [class*="close"]',
+            )
             close_btn.click()
             time.sleep(0.5)
         except Exception:
@@ -96,7 +107,10 @@ class AkileCheckin:
         try:
             login_button = WebDriverWait(self.browser, 10).until(
                 EC.presence_of_element_located(
-                    (By.XPATH, '//*[@id="app"]/div[1]/div[1]/div/div/div[2]/div/div[2]/button')
+                    (
+                        By.XPATH,
+                        '//*[@id="app"]/div[1]/div[1]/div/div/div[2]/div/div[2]/button',
+                    )
                 )
             )
             # 使用 JS 点击，绕过 ElementClickInterceptedException
@@ -110,11 +124,15 @@ class AkileCheckin:
         # 键入邮箱和密码
         try:
             email_input = WebDriverWait(self.browser, 10).until(
-                EC.element_to_be_clickable((By.XPATH, '//input[@placeholder="请输入邮箱"]'))
+                EC.element_to_be_clickable(
+                    (By.XPATH, '//input[@placeholder="请输入邮箱"]')
+                )
             )
             email_input.send_keys(self.email)
             password_input = WebDriverWait(self.browser, 10).until(
-                EC.element_to_be_clickable((By.XPATH, '//input[@placeholder="请输入密码"]'))
+                EC.element_to_be_clickable(
+                    (By.XPATH, '//input[@placeholder="请输入密码"]')
+                )
             )
             password_input.send_keys(self.password)
         except TimeoutException as e:
@@ -127,7 +145,10 @@ class AkileCheckin:
         try:
             submit_button = WebDriverWait(self.browser, 10).until(
                 EC.element_to_be_clickable(
-                    (By.XPATH, '//*[@id="app"]/div[1]/div/div/div/div[1]/form/div[4]/div[1]/button')
+                    (
+                        By.XPATH,
+                        '//*[@id="app"]/div[1]/div/div/div/div[1]/form/div[4]/div[1]/button',
+                    )
                 )
             )
             submit_button.click()
@@ -144,11 +165,18 @@ class AkileCheckin:
 
         # 签到前的积分（对于已签到过的用户这个积分就是签到后的积分）
         try:
-            prev_points = WebDriverWait(self.browser, 10).until(
-                EC.visibility_of_element_located(
-                    (By.XPATH, '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]')
+            prev_points = (
+                WebDriverWait(self.browser, 10)
+                .until(
+                    EC.visibility_of_element_located(
+                        (
+                            By.XPATH,
+                            '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]',
+                        )
+                    )
                 )
-            ).text
+                .text
+            )
             prev_points_num = int(prev_points.split("AK币")[0].strip())
         except TimeoutException:
             prev_points_num = -1
@@ -157,18 +185,28 @@ class AkileCheckin:
         try:
             checkin_button = WebDriverWait(self.browser, 10).until(
                 EC.element_to_be_clickable(
-                    (By.XPATH， '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]/button')
+                    (
+                        By.XPATH,
+                        '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]/button',
+                    )
                 )
             )
             checkin_button.click()
             time.sleep(3)  # 防止点击签到动作未发出
 
             try:
-                cur_points = WebDriverWait(self.browser, 10).until(
-                    EC.visibility_of_element_located(
-                        (By.XPATH, '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]')
+                cur_points = (
+                    WebDriverWait(self.browser, 10)
+                    .until(
+                        EC.visibility_of_element_located(
+                            (
+                                By.XPATH,
+                                '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]',
+                            )
+                        )
                     )
-                ).text
+                    .text
+                )
                 cur_points_num = int(cur_points.split("AK币")[0].strip())
 
                 if prev_points_num == -1:
@@ -192,7 +230,10 @@ class AkileCheckin:
             try:
                 WebDriverWait(self.browser, 10).until(
                     EC.presence_of_element_located(
-                        (By.XPATH, '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]/button')
+                        (
+                            By.XPATH,
+                            '//*[@id="app"]/div[1]/div[2]/div[2]/div/div[1]/div/div/div[2]/button',
+                        )
                     )
                 )
                 msg = f"今日已签到, 现在有{prev_points_num}AK币"
@@ -207,7 +248,7 @@ class AkileCheckin:
 
     def __del__(self):
         if self.browser:
-            self.browser。quit()
+            self.browser.quit()
 
 
 if __name__ == "__main__":
